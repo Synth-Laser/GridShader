@@ -16,8 +16,12 @@ Shader "Unlit/Grid"
         [Header(Size Configurations)]
         [Space()]
 
-        _GridSize
-            ("Grid Size", Range(0.01, 1.0))
+        _GridSizeX
+            ("Grid Size X", Range(0.01, 1.0))
+            = 0.1
+            
+        _GridSizeY
+            ("Grid Size Y", Range(0.01, 1.0))
             = 0.1
 
         _GridLineThickness
@@ -70,7 +74,10 @@ Shader "Unlit/Grid"
             float4 _MainTex_ST;
 
             float4 _GridColour;
-            float _GridSize;
+
+            float _GridSizeX;
+            float _GridSizeY;
+            
             float _GridLineThickness;
 
             float _Alpha;
@@ -91,18 +98,23 @@ Shader "Unlit/Grid"
             {
                 float result;
 
-                //grid spacing
-                for (float cell = 0.0; cell <= 1; cell += _GridSize)
+                //grid spacing X
+                for (float cell = 0.0; cell <= 1; cell += _GridSizeX)
                 {
-                    // x,y coordinates
-                    for (int axis = 0; axis < 2; axis++)
-                    {
-                        float currentCoordinate = uvNormalizedCoords[axis] - cell;
-                        float isNotOnLine = smoothstep(0.0, _GridLineThickness, abs(currentCoordinate));
-                        float isOnLine = 1.0 - isNotOnLine;
+                    float currentCoordinate = uvNormalizedCoords.x - cell;
+                    float isNotOnLine = smoothstep(0.0, _GridLineThickness, abs(currentCoordinate));
+                    float isOnLine = 1.0 - isNotOnLine;
 
-                        result += isOnLine;
-                    }
+                    result += isOnLine;
+                }
+                //grid spacing Y
+                for (float cell = 0.0; cell <= 1; cell += _GridSizeY)
+                {
+                    float currentCoordinate = uvNormalizedCoords.y - cell;
+                    float isNotOnLine = smoothstep(0.0, _GridLineThickness, abs(currentCoordinate));
+                    float isOnLine = 1.0 - isNotOnLine;
+
+                    result += isOnLine;
                 }
 
                 return result;
