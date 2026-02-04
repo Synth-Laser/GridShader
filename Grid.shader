@@ -5,29 +5,29 @@ Shader "Unlit/Grid"
         [Header(Aesthetics)]
         [Space()]
 
-        _MainTex            
+        _MainTex
             ("Texture", 2D)
             = "white" {}
 
-        [HDR]_GridColour    
+        [HDR]_GridColour
             ("Grid Colour", Color)
             = (.255, .0, .0, 1)
 
         [Header(Size Configurations)]
         [Space()]
 
-        _GridSize           
+        _GridSize
             ("Grid Size", Range(0.01, 1.0))
             = 0.1
 
-        _GridLineThickness  
+        _GridLineThickness
             ("Grid Line Thickness", Range(0.00001, 0.010))
             = 0.003
 
         [Header(Transparency)]
         [Space()]
-        
-        _Alpha              
+
+        _Alpha
             ("Grid Transparency", Range(0, 1))
             = 1.0
 
