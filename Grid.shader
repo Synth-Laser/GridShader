@@ -45,10 +45,6 @@ Shader "Unlit/Grid"
         [Header(Transparency)]
         [Space()]
 
-        _Alpha
-            ("Grid Transparency", Range(0, 1))
-            = 1.0
-
         _BGAlpha
             ("BG Transparency", Range(0, 1))
             = 0.0
@@ -98,7 +94,6 @@ Shader "Unlit/Grid"
             float _GridLineThickness;
             float _SharpLine;
 
-            float _Alpha;
             float _BGAlpha;
 
             vert2frag vert (appdata vertInput)
@@ -162,7 +157,7 @@ Shader "Unlit/Grid"
 
                 fixed4 gridColour = (_GridColour * gridAmount) + textureColor;
 
-                gridColour.a = lerp(_BGAlpha, _Alpha, gridAmount);
+                gridColour.a = lerp(_BGAlpha, _GridColour.a, gridAmount);
 
                 return float4(gridColour);
             }
