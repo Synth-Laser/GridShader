@@ -15,14 +15,14 @@ Shader "Unlit/Grid"
 
         [Header(Size Configurations)]
         [Space()]
-
-        _GridCellsX
-            ("Grid Columns", Range(0.9, 100))
-            = 1
             
-        _GridCellsY
+        _GridRows
             ("Grid Rows", Range(0.9, 100))
             = 2
+
+        _GridColumns
+            ("Grid Columns", Range(0.9, 100))
+            = 1
 
         _GridLineThickness
             ("Grid Line Thickness", Range(0.00001, 0.010))
@@ -75,8 +75,8 @@ Shader "Unlit/Grid"
 
             float4 _GridColour;
 
-            float _GridCellsX;
-            float _GridCellsY;
+            float _GridRows;
+            float _GridColumns;
             
             float _GridLineThickness;
 
@@ -97,9 +97,11 @@ Shader "Unlit/Grid"
             float GridTest(float2 uvNormalizedCoords)
             {
                 float result;
+                float gridSizeX = 1 / _GridColumns;
+                float gridSizeY = 1 / _GridRows;
 
                 //grid spacing X
-                for (float cell = 0.0; cell <= 1; cell += 1 / _GridCellsX)
+                for (float cell = 0.0; cell <= 1; cell += gridSizeX)
                 {
                     float currentCoordinate = uvNormalizedCoords.x - cell;
                     float isNotOnLine = smoothstep(0.0, _GridLineThickness, abs(currentCoordinate));
@@ -108,7 +110,7 @@ Shader "Unlit/Grid"
                     result += isOnLine;
                 }
                 //grid spacing Y
-                for (float cell = 0.0; cell <= 1; cell += 1 / _GridCellsY)
+                for (float cell = 0.0; cell <= 1; cell += gridSizeY)
                 {
                     float currentCoordinate = uvNormalizedCoords.y - cell;
                     float isNotOnLine = smoothstep(0.0, _GridLineThickness, abs(currentCoordinate));
