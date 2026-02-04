@@ -20,7 +20,11 @@ Shader "Unlit/Grid"
 
         _Alpha              
             ("Grid Transparency", Range(0, 1))
-            = 0.5
+            = 1.0
+
+        _BGAlpha
+            ("BG Transparency", Range(0, 1))
+            = 0.0
     }
     SubShader
     {
@@ -55,10 +59,13 @@ Shader "Unlit/Grid"
 
             sampler2D _MainTex;
             float4 _MainTex_ST;
+
             float4 _GridColour;
             float _GridSize;
             float _GridLineThickness;
+
             float _Alpha;
+            float _BGAlpha;
 
             vert2frag vert (appdata vertInput)
             {
@@ -98,7 +105,8 @@ Shader "Unlit/Grid"
                 fixed4 textureColor = tex2D(_MainTex, input.uv);
 
                 fixed4 gridColour = (_GridColour * gridAmount) + textureColor;
-                gridColour.a = _Alpha;
+
+                gridColour.a = lerp(_BGAlpha, _Alpha, gridAmount);
 
                 return float4(gridColour);
             }
