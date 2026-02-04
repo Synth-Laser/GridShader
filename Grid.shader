@@ -151,6 +151,7 @@ Shader "Unlit/Grid"
                     result += isOnLine;
                 }
 
+                if (result > 1) result = 1;
                 return result;
             }
 
