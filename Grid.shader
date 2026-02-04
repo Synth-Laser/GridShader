@@ -2,7 +2,7 @@ Shader "Unlit/Grid"
 {
     Properties
     {
-        [Header(Aesthetics)]
+        [Header(Colors)]
         [Space()]
 
         _MainTex
@@ -13,7 +13,7 @@ Shader "Unlit/Grid"
             ("Grid Colour", Color)
             = (.255, .0, .0, 1)
 
-        [Header(Size Configurations)]
+        [Header(Grid Configurations)]
         [Space()]
             
         _GridRows
@@ -31,9 +31,16 @@ Shader "Unlit/Grid"
             ("Grid Offset Y", Range(0.0, 1))
             = 0
 
+        [Header(Line Configurations)]
+        [Space()]
+
         _GridLineThickness
             ("Grid Line Thickness", Range(0.00001, 0.1))
             = 0.003
+
+        [Toggle()] _SharpLine
+            ("Use sharp lines", float)
+            = 0
 
         [Header(Transparency)]
         [Space()]
@@ -89,6 +96,7 @@ Shader "Unlit/Grid"
             float _OffsetY;
             
             float _GridLineThickness;
+            float _SharpLine;
 
             float _Alpha;
             float _BGAlpha;
@@ -114,7 +122,14 @@ Shader "Unlit/Grid"
                 for (float cell = _OffsetX % gridSizeX; cell <= 1; cell += gridSizeX)
                 {
                     float currentCoordinate = uvNormalizedCoords.x - cell;
-                    float isNotOnLine = smoothstep(0.0, _GridLineThickness, abs(currentCoordinate));
+
+                    float isNotOnLine = 
+                    _SharpLine ?
+                        step(_GridLineThickness, abs(currentCoordinate))
+                    :
+                        smoothstep(0.0, _GridLineThickness, abs(currentCoordinate))
+                    ;
+
                     float isOnLine = 1.0 - isNotOnLine;
 
                     result += isOnLine;
@@ -123,7 +138,14 @@ Shader "Unlit/Grid"
                 for (float cell = _OffsetY % gridSizeY; cell <= 1; cell += gridSizeY)
                 {
                     float currentCoordinate = uvNormalizedCoords.y - cell;
-                    float isNotOnLine = smoothstep(0.0, _GridLineThickness, abs(currentCoordinate));
+                    
+                    float isNotOnLine = 
+                    _SharpLine ?
+                        step(_GridLineThickness, abs(currentCoordinate))
+                    :
+                        smoothstep(0.0, _GridLineThickness, abs(currentCoordinate))
+                    ;
+
                     float isOnLine = 1.0 - isNotOnLine;
 
                     result += isOnLine;
