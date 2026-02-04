@@ -32,7 +32,7 @@ Shader "Unlit/Grid"
             = 0
 
         _GridLineThickness
-            ("Grid Line Thickness", Range(0.00001, 0.010))
+            ("Grid Line Thickness", Range(0.00001, 0.1))
             = 0.003
 
         [Header(Transparency)]
