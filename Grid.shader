@@ -8,10 +8,18 @@ Shader "Unlit/Grid"
         _MainTex
             ("Texture", 2D)
             = "white" {}
+            
+        [Toggle()] _FilledLine
+            ("Fill line with color", float)
+            = 0
 
         [HDR]_GridColour
             ("Grid Colour", Color)
             = (.255, .0, .0, 1)
+
+        _Saturation
+            ("Saturation", Range(0.1, 2))
+            = 1.0
 
         [HDR]_BackgroundColour
             ("Background Colour", Color)
@@ -88,6 +96,8 @@ Shader "Unlit/Grid"
             float4 _MainTex_ST;
 
             float4 _GridColour;
+            float _Saturation;
+            float _FilledLine;
             float4 _BackgroundColour;
 
             float _GridRows;
@@ -132,7 +142,7 @@ Shader "Unlit/Grid"
 
                     float isOnLine = 1.0 - isNotOnLine;
 
-                    result += isOnLine;
+                    result += _Saturation * isOnLine;
                 }
                 //grid spacing Y
                 for (float cell = _OffsetY % gridSizeY; cell <= 1; cell += gridSizeY)
@@ -148,7 +158,7 @@ Shader "Unlit/Grid"
 
                     float isOnLine = 1.0 - isNotOnLine;
 
-                    result += isOnLine;
+                    result += _Saturation * isOnLine;
                 }
 
                 if (result > 1) result = 1;
@@ -171,6 +181,19 @@ Shader "Unlit/Grid"
                 // base.a = lerp(_BGAlpha, _GridColour.a, gridAmount);
                 // gridColour.a = lerp(_BackgroundColour.a, _GridColour.a, gridAmount * _GridColour.a);
 
+
+                fixed4 fillColour = 
+                _FilledLine ?
+                    fixed4(0, 0, 0, 1)
+                :
+                    fixed4(1, 1, 1, 1)
+                ;
+
+                textureColor = lerp(fillColour, textureColor, textureColor.a);
+
+
+                float gridAmount = GridTest(input.uv);
+                
                 fixed4 gridColour = (_GridColour * gridAmount) + textureColor;
                 gridColour.a = lerp(_BGAlpha, _GridColour.a, gridAmount);
 
