@@ -58,7 +58,7 @@ Shader "Unlit/Grid"
         [Space()]
 
         _BGAlpha
-            ("BG Transparency", Range(0, 1))
+            ("Texture BG Transparency", Range(0, 1))
             = 0.0
     }
     SubShader
@@ -175,33 +175,24 @@ Shader "Unlit/Grid"
                     fixed4(1, 1, 1, 1)
                 ;
                 fillColour = lerp(fillColour, textureColor, textureColor.a);
-                // fillColour.a = lerp(fillColour.a, textureColor.a, textureColor.a);
                 
                 float gridAmount = GridTest(input.uv);
-                // float bgAmount = 1 - gridAmount;
 
-
-                fixed4 gridColour = (_GridColour * gridAmount);// + textureColor;
-                gridColour += fillColour;//lerp(textureColor, fillColour, gridAmount);
-                // gridColour.a = lerp(fillColour.a, gridColour.a, fillColour.a);
+                fixed4 gridColour = (_GridColour * gridAmount);
+                gridColour += fillColour;
                 gridColour.a = lerp(0, _GridColour.a, gridAmount);
-
-                // fixed4 bgColour = lerp(_BackgroundColour, textureColor, textureColor.a);
-
-                float combinedAlpha = max(gridColour.a, textureColor.a);
 
                 if (_BGAlpha != 0)
                 {
+                    float combinedAlpha = max(gridColour.a, textureColor.a);
+
                     gridColour = lerp(_BackgroundColour, gridColour, combinedAlpha);
                     gridColour.a = lerp(_BGAlpha, gridColour.a, gridColour.a);
                 }
 
                 gridColour = lerp(_BackgroundColour, gridColour, gridColour.a);
 
-                // gridColour = lerp(fillColour, gridColour, gridColour.a);
                 gridColour.a = lerp(_BackgroundColour.a, _GridColour.a, gridAmount);
-
-
 
                 return float4(gridColour);
             }
