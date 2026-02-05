@@ -162,15 +162,19 @@ Shader "Unlit/Grid"
 
             fixed4 frag(vert2frag input) : SV_Target
             {
-
-                float gridAmount = GridTest(input.uv);
                 fixed4 textureColor = tex2D(_MainTex, input.uv);
 
-                if (_FilledLine && all(textureColor == fixed4(1, 1, 1, 1)))
-                {
-                    textureColor = fixed4(0, 0, 0, 1);
-                }
+                fixed4 fillColour = 
+                _FilledLine ?
+                    fixed4(0, 0, 0, 1)
+                :
+                    fixed4(1, 1, 1, 1)
+                ;
 
+                textureColor = lerp(fillColour, textureColor, textureColor.a);
+
+
+                float gridAmount = GridTest(input.uv);
                 fixed4 gridColour = (_GridColour * gridAmount) + textureColor;
 
                 gridColour.a = lerp(_BGAlpha, _GridColour.a, gridAmount);
