@@ -8,6 +8,10 @@ Shader "Unlit/Grid"
         _MainTex
             ("Texture", 2D)
             = "white" {}
+            
+        [Toggle()] _FilledLine
+            ("Fill line with color", float)
+            = 0
 
         [HDR]_GridColour
             ("Grid Colour", Color)
@@ -89,6 +93,7 @@ Shader "Unlit/Grid"
 
             float4 _GridColour;
             float _Saturation;
+            float _FilledLine;
 
             float _GridRows;
             float _GridColumns;
@@ -157,8 +162,14 @@ Shader "Unlit/Grid"
 
             fixed4 frag(vert2frag input) : SV_Target
             {
+
                 float gridAmount = GridTest(input.uv);
                 fixed4 textureColor = tex2D(_MainTex, input.uv);
+
+                if (_FilledLine && all(textureColor == fixed4(1, 1, 1, 1)))
+                {
+                    textureColor = fixed4(0, 0, 0, 1);
+                }
 
                 fixed4 gridColour = (_GridColour * gridAmount) + textureColor;
 
