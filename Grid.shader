@@ -21,6 +21,10 @@ Shader "Unlit/Grid"
             ("Saturation", Range(0.1, 2))
             = 1.0
 
+        [HDR]_BackgroundColour
+            ("Background Colour", Color)
+            = (.255, .0, .0, 1)
+
         [Header(Grid Configurations)]
         [Space()]
             
@@ -94,6 +98,7 @@ Shader "Unlit/Grid"
             float4 _GridColour;
             float _Saturation;
             float _FilledLine;
+            float4 _BackgroundColour;
 
             float _GridRows;
             float _GridColumns;
@@ -119,7 +124,7 @@ Shader "Unlit/Grid"
 
             float GridTest(float2 uvNormalizedCoords)
             {
-                float result;
+                float result = 0.0;
                 float gridSizeX = 1 / _GridColumns;
                 float gridSizeY = 1 / _GridRows;
 
@@ -163,21 +168,23 @@ Shader "Unlit/Grid"
             fixed4 frag(vert2frag input) : SV_Target
             {
                 fixed4 textureColor = tex2D(_MainTex, input.uv);
-
                 fixed4 fillColour = 
                 _FilledLine ?
                     fixed4(0, 0, 0, 1)
                 :
                     fixed4(1, 1, 1, 1)
                 ;
-
                 textureColor = lerp(fillColour, textureColor, textureColor.a);
-
-
+                
                 float gridAmount = GridTest(input.uv);
-                fixed4 gridColour = (_GridColour * gridAmount) + textureColor;
+                float bgAmount = 1 - gridAmount;
 
+
+                fixed4 gridColour = (_GridColour * gridAmount) + textureColor;
                 gridColour.a = lerp(_BGAlpha, _GridColour.a, gridAmount);
+
+                gridColour = lerp(_BackgroundColour, gridColour, gridColour.a);
+
 
                 return float4(gridColour);
             }
