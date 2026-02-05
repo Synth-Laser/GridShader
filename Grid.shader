@@ -7,7 +7,7 @@ Shader "Unlit/Grid"
 
         _MainTex
             ("Texture", 2D)
-            = "white" {}
+            = "clear" {}
             
         [Toggle()] _FilledLine
             ("Fill line with color", float)
