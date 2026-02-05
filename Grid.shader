@@ -7,7 +7,7 @@ Shader "Unlit/Grid"
 
         _MainTex
             ("Texture", 2D)
-            = "white" {}
+            = "clear" {}
             
         [Toggle()] _FilledLine
             ("Fill line with color", float)
@@ -167,9 +167,6 @@ Shader "Unlit/Grid"
 
             fixed4 frag(vert2frag input) : SV_Target
             {
-                float gridAmount = GridTest(input.uv);
-                float bgAmount = 1 - gridAmount;
-
                 fixed4 textureColor = tex2D(_MainTex, input.uv);
                 fixed4 fillColour = 
                 _FilledLine ?
@@ -178,21 +175,15 @@ Shader "Unlit/Grid"
                     fixed4(1, 1, 1, 1)
                 ;
                 textureColor = lerp(fillColour, textureColor, textureColor.a);
+                
+                float gridAmount = GridTest(input.uv);
+                float bgAmount = 1 - gridAmount;
 
-                // fixed4 base = lerp(textureColor, _BackgroundColour, bgAmount * _BackgroundColour.a);
-                // fixed4 gridColour = lerp(base, _GridColour, gridAmount * _GridColour.a);
-
-                // fixed4 gridColour = lerp(textureColor, _GridColour, gridAmount * _GridColour.a);
-                // fixed4 base = lerp(gridColour, _BackgroundColour, bgAmount * _BackgroundColour.a);
-
-                // base.a = lerp(_BGAlpha, _GridColour.a, gridAmount);
-                // gridColour.a = lerp(_BackgroundColour.a, _GridColour.a, gridAmount * _GridColour.a);
 
                 fixed4 gridColour = (_GridColour * gridAmount) + textureColor;
                 gridColour.a = lerp(_BGAlpha, _GridColour.a, gridAmount);
 
-
-                // fixed4 finalColour = lerp(gridColour, _BackgroundColour, (1 - gridColour.a));
+                gridColour = lerp(_BackgroundColour, gridColour, gridColour.a);
 
 
                 return float4(gridColour);
