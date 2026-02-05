@@ -174,16 +174,33 @@ Shader "Unlit/Grid"
                 :
                     fixed4(1, 1, 1, 1)
                 ;
-                textureColor = lerp(fillColour, textureColor, textureColor.a);
+                fillColour = lerp(fillColour, textureColor, textureColor.a);
+                // fillColour.a = lerp(fillColour.a, textureColor.a, textureColor.a);
                 
                 float gridAmount = GridTest(input.uv);
-                float bgAmount = 1 - gridAmount;
+                // float bgAmount = 1 - gridAmount;
 
 
-                fixed4 gridColour = (_GridColour * gridAmount) + textureColor;
-                gridColour.a = lerp(_BGAlpha, _GridColour.a, gridAmount);
+                fixed4 gridColour = (_GridColour * gridAmount);// + textureColor;
+                gridColour += fillColour;//lerp(textureColor, fillColour, gridAmount);
+                // gridColour.a = lerp(fillColour.a, gridColour.a, fillColour.a);
+                gridColour.a = lerp(0, _GridColour.a, gridAmount);
+
+                // fixed4 bgColour = lerp(_BackgroundColour, textureColor, textureColor.a);
+
+                float combinedAlpha = max(gridColour.a, textureColor.a);
+
+                if (_BGAlpha != 0)
+                {
+                    gridColour = lerp(_BackgroundColour, gridColour, combinedAlpha);
+                    gridColour.a = lerp(_BGAlpha, gridColour.a, gridColour.a);
+                }
 
                 gridColour = lerp(_BackgroundColour, gridColour, gridColour.a);
+
+                // gridColour = lerp(fillColour, gridColour, gridColour.a);
+                gridColour.a = lerp(_BackgroundColour.a, _GridColour.a, gridAmount);
+
 
 
                 return float4(gridColour);
