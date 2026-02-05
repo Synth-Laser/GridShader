@@ -171,6 +171,13 @@ Shader "Unlit/Grid"
                 float bgAmount = 1 - gridAmount;
 
                 fixed4 textureColor = tex2D(_MainTex, input.uv);
+                fixed4 fillColour = 
+                _FilledLine ?
+                    fixed4(0, 0, 0, 1)
+                :
+                    fixed4(1, 1, 1, 1)
+                ;
+                textureColor = lerp(fillColour, textureColor, textureColor.a);
 
                 // fixed4 base = lerp(textureColor, _BackgroundColour, bgAmount * _BackgroundColour.a);
                 // fixed4 gridColour = lerp(base, _GridColour, gridAmount * _GridColour.a);
@@ -181,19 +188,6 @@ Shader "Unlit/Grid"
                 // base.a = lerp(_BGAlpha, _GridColour.a, gridAmount);
                 // gridColour.a = lerp(_BackgroundColour.a, _GridColour.a, gridAmount * _GridColour.a);
 
-
-                fixed4 fillColour = 
-                _FilledLine ?
-                    fixed4(0, 0, 0, 1)
-                :
-                    fixed4(1, 1, 1, 1)
-                ;
-
-                textureColor = lerp(fillColour, textureColor, textureColor.a);
-
-
-                float gridAmount = GridTest(input.uv);
-                
                 fixed4 gridColour = (_GridColour * gridAmount) + textureColor;
                 gridColour.a = lerp(_BGAlpha, _GridColour.a, gridAmount);
 
