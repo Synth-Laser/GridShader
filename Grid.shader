@@ -42,21 +42,9 @@ Shader "Unlit/Grid"
         [Header(Dotting Configurations)]
         [Space()]
         
-        _DotCountX
-            ("Dot Count X", Range(1, 100))
-            = 5
-        
-        _DotCountY
-            ("Dot Count Y", Range(1, 100))
-            = 5
-
-        _DotFillX
-            ("Dot Fill x%", Range(0, 100))
-            = 50
-
-        _DotFillY
-            ("Dot Fill y%", Range(0, 100))
-            = 50
+        _Dotting
+            ("Dot Count, fill", Vector)
+            = (5, 5, 50, 50)
     }
     SubShader
     {
@@ -101,10 +89,7 @@ Shader "Unlit/Grid"
             float _GridLineThickness;
             float _SharpLine;
             
-            float _DotCountX;
-            float _DotCountY;
-            float _DotFillX;
-            float _DotFillY;
+            float4 _Dotting;
 
             vert2frag vert (appdata vertInput)
             {
@@ -127,12 +112,12 @@ Shader "Unlit/Grid"
                 float offsetY = _GridSize.w;
 
                 float2 dotSpacing;
-                dotSpacing.x = 1 / _DotCountX;
-                dotSpacing.y = 1 / _DotCountY;
+                dotSpacing.x = 1 / _Dotting.x;
+                dotSpacing.y = 1 / _Dotting.y;
 
                 float2 dotSize;
-                dotSize.x = _DotFillX / 100;
-                dotSize.y = _DotFillY / 100;
+                dotSize.x = _Dotting.z / 100;
+                dotSize.y = _Dotting.w / 100;
 
                 //grid spacing X
                 for (float cell = offsetX % gridSizeX; cell <= 1; cell += gridSizeX)
