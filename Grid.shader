@@ -53,13 +53,13 @@ Shader "Unlit/Grid"
         [Header(Dotting Configurations)]
         [Space()]
         
-        _DotSpacing
-            ("Dot Spacing", Range(0, 1))
-            = 1.0
+        _DotCount
+            ("Dot Count", Range(0.1, 100))
+            = 5
 
-        _DotSize
-            ("Dot Size", Range(0, 1))
-            = 1.0
+        _DotFill
+            ("Dot Fill %", Range(0, 100))
+            = 50
     }
     SubShader
     {
@@ -108,8 +108,8 @@ Shader "Unlit/Grid"
             float _GridLineThickness;
             float _SharpLine;
             
-            float _DotSpacing;
-            float _DotSize;
+            float _DotCount;
+            float _DotFill;
 
             vert2frag vert (appdata vertInput)
             {
@@ -127,11 +127,13 @@ Shader "Unlit/Grid"
                 float result = 0.0;
                 float gridSizeX = 1 / _GridColumns;
                 float gridSizeY = 1 / _GridRows;
+                float dotSpacing = 1 / _DotCount;
+                float dotSize = _DotFill / 100;
 
                 //grid spacing X
                 for (float cell = _OffsetX % gridSizeX; cell <= 1; cell += gridSizeX)
                 {
-                    if (frac(uvNormalizedCoords.y / _DotSpacing) >= _DotSize)
+                    if (frac(uvNormalizedCoords.y / dotSpacing) >= dotSize)
                         continue;
 
                     float currentCoordinate = uvNormalizedCoords.x - cell;
@@ -150,7 +152,7 @@ Shader "Unlit/Grid"
                 //grid spacing Y
                 for (float cell = _OffsetY % gridSizeY; cell <= 1; cell += gridSizeY)
                 {
-                    if (frac(uvNormalizedCoords.x / _DotSpacing) >= _DotSize)
+                    if (frac(uvNormalizedCoords.x / dotSpacing) >= dotSize)
                         continue;
 
                     float currentCoordinate = uvNormalizedCoords.y - cell;
