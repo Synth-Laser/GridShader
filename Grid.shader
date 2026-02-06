@@ -17,10 +17,6 @@ Shader "Unlit/Grid"
             ("Grid Colour", Color)
             = (.255, .0, .0, 1)
 
-        _Saturation
-            ("Saturation", Range(0.1, 2))
-            = 1.0
-
         [HDR]_BackgroundColour
             ("Background Colour", Color)
             = (.255, .0, .0, 1)
@@ -89,7 +85,6 @@ Shader "Unlit/Grid"
             float4 _MainTex_ST;
 
             float4 _GridColour;
-            float _Saturation;
             float _FilledLine;
             float4 _BackgroundColour;
 
@@ -133,7 +128,7 @@ Shader "Unlit/Grid"
 
                     float isOnLine = 1.0 - isNotOnLine;
 
-                    result += _Saturation * isOnLine;
+                    result += isOnLine;
                 }
                 //grid spacing Y
                 for (float cell = _OffsetY % gridSizeY; cell <= 1; cell += gridSizeY)
@@ -149,7 +144,7 @@ Shader "Unlit/Grid"
 
                     float isOnLine = 1.0 - isNotOnLine;
 
-                    result += _Saturation * isOnLine;
+                    result += isOnLine;
                 }
 
                 if (result > 1) result = 1;
