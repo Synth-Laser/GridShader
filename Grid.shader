@@ -167,34 +167,78 @@ Shader "Unlit/Grid"
 
             fixed4 frag(vert2frag input) : SV_Target
             {
+                //texture sample
                 fixed4 textureColor = tex2D(_MainTex, input.uv);
+
+                //fill base
                 fixed4 fillColour = 
                 _FilledLine ?
                     fixed4(0, 0, 0, 1)
                 :
                     fixed4(1, 1, 1, 1)
                 ;
+
+                //bottom layer
                 fillColour = lerp(fillColour, textureColor, textureColor.a);
                 
+                //grid mask
                 float gridAmount = GridTest(input.uv);
 
+                // float gridAlpha = _GridColour.a * gridAmount;
+                // fixed4 gridLayer = _GridColour;
+
+                // //bottom layer + grid layer
+                // fixed4 combinedContent = (_GridColour * gridAmount) + fillColour;
+                // // = lerp(fillColour, _GridColour, gridAlpha);
+                // float objectAlpha = max(textureColor.a, gridAlpha);
+                // fixed4 gridColour = lerp(_BackgroundColour, combinedContent, objectAlpha);
+                // gridColour.a =
+                // (_BGAlpha != 0) ?
+                //     max(_BGAlpha, objectAlpha)
+                // :
+                //     objectAlpha
+                // ;
+
+                /*
+                alpha masks needed
+                - I need grid in layer on top, with additive blended texture/fill
+                - background is bg color with texture on top - at bgalpha
+
+                lowest: background color with its transparency
+                on top of it - texture with -> texture transparency and bgalpha
+                on top of that - fill color where the lines are
+                on top of that - additive gridcolor
+                */
+
+                fixed4 bgColor = _BackgroundColour;
+                bgColor.a = _BackgroundColour.a;
+
+                float textureAlpha = max(_BGAlpha, textureColor.a);
+                fixed4 bgTextured = lerp(bgColor, textureColor, textureAlpha);
+
+                fixed4 filledLines = lerp(bgTextured, fillColour, gridAmount);
+
                 fixed4 gridColour = (_GridColour * gridAmount);
-                gridColour += fillColour;
                 gridColour.a = lerp(0, _GridColour.a, gridAmount);
+                filledLines += gridColour;
 
-                if (_BGAlpha != 0)
-                {
-                    float combinedAlpha = max(gridColour.a, textureColor.a);
+                // fixed4 gridColour = (_GridColour * gridAmount);
+                // gridColour += fillColour;
+                // gridColour.a = lerp(0, _GridColour.a, gridAmount);
 
-                    gridColour = lerp(_BackgroundColour, gridColour, combinedAlpha);
-                    gridColour.a = lerp(_BGAlpha, gridColour.a, gridColour.a);
-                }
+                // if (_BGAlpha != 0)
+                // {
+                //     float combinedAlpha = max(gridColour.a, textureColor.a);
 
-                gridColour = lerp(_BackgroundColour, gridColour, gridColour.a);
+                //     gridColour = lerp(_BackgroundColour, gridColour, combinedAlpha);
+                //     gridColour.a = lerp(_BGAlpha, gridColour.a, gridColour.a);
+                // }
 
-                gridColour.a = lerp(_BackgroundColour.a, _GridColour.a, gridAmount);
+                // gridColour = lerp(_BackgroundColour, gridColour, gridColour.a);
 
-                return float4(gridColour);
+                // gridColour.a = lerp(_BackgroundColour.a, _GridColour.a, gridAmount);
+
+                return float4(filledLines);
             }
             ENDCG
         }
