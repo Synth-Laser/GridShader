@@ -183,7 +183,16 @@ Shader "Unlit/Grid"
                 
                 //grid mask
                 float gridAmount = GridTest(input.uv);
+                
+                fixed4 gridColour = (_GridColour * gridAmount);
+                gridColour += fillColour;
+                gridColour.a = lerp(0, _GridColour.a, gridAmount);
 
+
+                fixed4 bgColor = _BackgroundColour;
+                bgColor.a = _BackgroundColour.a;
+
+                fixed4 combinedColour = lerp(bgColor, gridColour, gridColour.a);
                 // float gridAlpha = _GridColour.a * gridAmount;
                 // fixed4 gridLayer = _GridColour;
 
@@ -210,21 +219,8 @@ Shader "Unlit/Grid"
                 on top of that - additive gridcolor
                 */
 
-                fixed4 bgColor = _BackgroundColour;
-                bgColor.a = _BackgroundColour.a;
 
-                float textureAlpha = max(_BGAlpha, textureColor.a);
-                fixed4 bgTextured = lerp(bgColor, textureColor, textureAlpha);
 
-                fixed4 filledLines = lerp(bgTextured, fillColour, gridAmount);
-
-                fixed4 gridColour = (_GridColour * gridAmount);
-                gridColour.a = lerp(0, _GridColour.a, gridAmount);
-                filledLines += gridColour;
-
-                // fixed4 gridColour = (_GridColour * gridAmount);
-                // gridColour += fillColour;
-                // gridColour.a = lerp(0, _GridColour.a, gridAmount);
 
                 // if (_BGAlpha != 0)
                 // {
@@ -238,7 +234,7 @@ Shader "Unlit/Grid"
 
                 // gridColour.a = lerp(_BackgroundColour.a, _GridColour.a, gridAmount);
 
-                return float4(filledLines);
+                return float4(combinedColour);
             }
             ENDCG
         }
