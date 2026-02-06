@@ -33,10 +33,10 @@ Shader "Unlit/Grid"
             = 1
             
         _OffsetX
-            ("Grid Offset X", Range(0.0, 1))
+            ("Grid Offset X", Range(-1, 1))
             = 0
         _OffsetY
-            ("Grid Offset Y", Range(0.0, 1))
+            ("Grid Offset Y", Range(-1, 1))
             = 0
 
         [Header(Line Configurations)]
