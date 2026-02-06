@@ -53,12 +53,20 @@ Shader "Unlit/Grid"
         [Header(Dotting Configurations)]
         [Space()]
         
-        _DotCount
-            ("Dot Count", Range(1, 100))
+        _DotCountX
+            ("Dot Count X", Range(1, 100))
+            = 5
+        
+        _DotCountY
+            ("Dot Count Y", Range(1, 100))
             = 5
 
-        _DotFill
-            ("Dot Fill %", Range(0, 100))
+        _DotFillX
+            ("Dot Fill x%", Range(0, 100))
+            = 50
+
+        _DotFillY
+            ("Dot Fill y%", Range(0, 100))
             = 50
     }
     SubShader
@@ -108,8 +116,10 @@ Shader "Unlit/Grid"
             float _GridLineThickness;
             float _SharpLine;
             
-            float _DotCount;
-            float _DotFill;
+            float _DotCountX;
+            float _DotCountY;
+            float _DotFillX;
+            float _DotFillY;
 
             vert2frag vert (appdata vertInput)
             {
@@ -127,13 +137,19 @@ Shader "Unlit/Grid"
                 float result = 0.0;
                 float gridSizeX = 1 / _GridColumns;
                 float gridSizeY = 1 / _GridRows;
-                float dotSpacing = 1 / _DotCount;
-                float dotSize = _DotFill / 100;
+
+                float2 dotSpacing;
+                dotSpacing.x = 1 / _DotCountX;
+                dotSpacing.y = 1 / _DotCountY;
+
+                float2 dotSize;
+                dotSize.x = _DotFillX / 100;
+                dotSize.y = _DotFillY / 100;
 
                 //grid spacing X
                 for (float cell = _OffsetX % gridSizeX; cell <= 1; cell += gridSizeX)
                 {
-                    if (frac(uvNormalizedCoords.y / dotSpacing) >= dotSize)
+                    if (frac(uvNormalizedCoords.y / dotSpacing.y) >= dotSize.y)
                         continue;
 
                     float currentCoordinate = uvNormalizedCoords.x - cell;
@@ -152,7 +168,7 @@ Shader "Unlit/Grid"
                 //grid spacing Y
                 for (float cell = _OffsetY % gridSizeY; cell <= 1; cell += gridSizeY)
                 {
-                    if (frac(uvNormalizedCoords.x / dotSpacing) >= dotSize)
+                    if (frac(uvNormalizedCoords.x / dotSpacing.x) >= dotSize.x)
                         continue;
 
                     float currentCoordinate = uvNormalizedCoords.y - cell;
