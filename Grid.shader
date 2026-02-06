@@ -54,7 +54,7 @@ Shader "Unlit/Grid"
         [Space()]
         
         _DotCount
-            ("Dot Count", Range(0.1, 100))
+            ("Dot Count", Range(1, 100))
             = 5
 
         _DotFill
