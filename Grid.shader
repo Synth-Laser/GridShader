@@ -49,6 +49,17 @@ Shader "Unlit/Grid"
         [Toggle()] _SharpLine
             ("Use sharp lines", float)
             = 0
+
+        [Header(Dotting Configurations)]
+        [Space()]
+        
+        _DotSpacing
+            ("Dot Spacing", Range(0, 1))
+            = 1.0
+
+        _DotSize
+            ("Dot Size", Range(0, 1))
+            = 1.0
     }
     SubShader
     {
@@ -96,6 +107,9 @@ Shader "Unlit/Grid"
             
             float _GridLineThickness;
             float _SharpLine;
+            
+            float _DotSpacing;
+            float _DotSize;
 
             vert2frag vert (appdata vertInput)
             {
@@ -117,6 +131,9 @@ Shader "Unlit/Grid"
                 //grid spacing X
                 for (float cell = _OffsetX % gridSizeX; cell <= 1; cell += gridSizeX)
                 {
+                    if (frac(uvNormalizedCoords.y / _DotSpacing) >= _DotSize)
+                        continue;
+
                     float currentCoordinate = uvNormalizedCoords.x - cell;
 
                     float isNotOnLine = 
@@ -133,6 +150,9 @@ Shader "Unlit/Grid"
                 //grid spacing Y
                 for (float cell = _OffsetY % gridSizeY; cell <= 1; cell += gridSizeY)
                 {
+                    if (frac(uvNormalizedCoords.x / _DotSpacing) >= _DotSize)
+                        continue;
+
                     float currentCoordinate = uvNormalizedCoords.y - cell;
                     
                     float isNotOnLine = 
