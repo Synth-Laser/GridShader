@@ -53,13 +53,6 @@ Shader "Unlit/Grid"
         [Toggle()] _SharpLine
             ("Use sharp lines", float)
             = 0
-
-        [Header(Transparency)]
-        [Space()]
-
-        _BGAlpha
-            ("Texture BG Transparency", Range(0, 1))
-            = 0.0
     }
     SubShader
     {
@@ -108,8 +101,6 @@ Shader "Unlit/Grid"
             
             float _GridLineThickness;
             float _SharpLine;
-
-            float _BGAlpha;
 
             vert2frag vert (appdata vertInput)
             {
@@ -193,46 +184,6 @@ Shader "Unlit/Grid"
                 bgColor.a = _BackgroundColour.a;
 
                 fixed4 combinedColour = lerp(bgColor, gridColour, gridColour.a);
-                // float gridAlpha = _GridColour.a * gridAmount;
-                // fixed4 gridLayer = _GridColour;
-
-                // //bottom layer + grid layer
-                // fixed4 combinedContent = (_GridColour * gridAmount) + fillColour;
-                // // = lerp(fillColour, _GridColour, gridAlpha);
-                // float objectAlpha = max(textureColor.a, gridAlpha);
-                // fixed4 gridColour = lerp(_BackgroundColour, combinedContent, objectAlpha);
-                // gridColour.a =
-                // (_BGAlpha != 0) ?
-                //     max(_BGAlpha, objectAlpha)
-                // :
-                //     objectAlpha
-                // ;
-
-                /*
-                alpha masks needed
-                - I need grid in layer on top, with additive blended texture/fill
-                - background is bg color with texture on top - at bgalpha
-
-                lowest: background color with its transparency
-                on top of it - texture with -> texture transparency and bgalpha
-                on top of that - fill color where the lines are
-                on top of that - additive gridcolor
-                */
-
-
-
-
-                // if (_BGAlpha != 0)
-                // {
-                //     float combinedAlpha = max(gridColour.a, textureColor.a);
-
-                //     gridColour = lerp(_BackgroundColour, gridColour, combinedAlpha);
-                //     gridColour.a = lerp(_BGAlpha, gridColour.a, gridColour.a);
-                // }
-
-                // gridColour = lerp(_BackgroundColour, gridColour, gridColour.a);
-
-                // gridColour.a = lerp(_BackgroundColour.a, _GridColour.a, gridAmount);
 
                 return float4(combinedColour);
             }
