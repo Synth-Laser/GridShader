@@ -25,7 +25,7 @@ Shader "Unlit/Grid"
         [Space()]
             
         _GridRows
-            ("Grid Rows", Range(0.9, 100))
+            ("Grid Rows", Range(0.9, 10000))
             = 2
 
         _GridColumns
@@ -54,11 +54,11 @@ Shader "Unlit/Grid"
         [Space()]
         
         _DotCountX
-            ("Dot Count X", Range(1, 100))
+            ("Dot Count X", Range(1, 10000))
             = 5
         
         _DotCountY
-            ("Dot Count Y", Range(1, 100))
+            ("Dot Count Y", Range(1, 10000))
             = 5
 
         _DotFillX
