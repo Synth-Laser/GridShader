@@ -23,21 +23,10 @@ Shader "Unlit/Grid"
 
         [Header(Grid Configurations)]
         [Space()]
-            
-        _GridRows
-            ("Grid Rows", Range(0.9, 10000))
-            = 2
 
-        _GridColumns
-            ("Grid Columns", Range(0.9, 100))
-            = 1
-            
-        _OffsetX
-            ("Grid Offset X", Range(-1, 1))
-            = 0
-        _OffsetY
-            ("Grid Offset Y", Range(-1, 1))
-            = 0
+        _GridSize
+            ("Grid size params", Vector)
+            = (2, 1, 0, 0)
 
         [Header(Line Configurations)]
         [Space()]
@@ -53,21 +42,9 @@ Shader "Unlit/Grid"
         [Header(Dotting Configurations)]
         [Space()]
         
-        _DotCountX
-            ("Dot Count X", Range(1, 10000))
-            = 5
-        
-        _DotCountY
-            ("Dot Count Y", Range(1, 10000))
-            = 5
-
-        _DotFillX
-            ("Dot Fill x%", Range(0, 100))
-            = 50
-
-        _DotFillY
-            ("Dot Fill y%", Range(0, 100))
-            = 50
+        _Dotting
+            ("Dot Count, fill", Vector)
+            = (5, 5, 50, 50)
     }
     SubShader
     {
@@ -107,19 +84,12 @@ Shader "Unlit/Grid"
             float _FilledLine;
             float4 _BackgroundColour;
 
-            float _GridRows;
-            float _GridColumns;
-
-            float _OffsetX;
-            float _OffsetY;
+            float4 _GridSize;
             
             float _GridLineThickness;
             float _SharpLine;
             
-            float _DotCountX;
-            float _DotCountY;
-            float _DotFillX;
-            float _DotFillY;
+            float4 _Dotting;
 
             vert2frag vert (appdata vertInput)
             {
@@ -135,21 +105,24 @@ Shader "Unlit/Grid"
             float GridTest(float2 uvNormalizedCoords)
             {
                 float result = 0.0;
-                float gridSizeX = 1 / _GridColumns;
-                float gridSizeY = 1 / _GridRows;
+                float gridSizeX = 1 / _GridSize.y;
+                float gridSizeY = 1 / _GridSize.x;
+
+                float offsetX = _GridSize.z;
+                float offsetY = _GridSize.w;
 
                 float2 dotSpacing;
-                dotSpacing.x = 1 / _DotCountX;
-                dotSpacing.y = 1 / _DotCountY;
+                dotSpacing.x = 1 / _Dotting.x;
+                dotSpacing.y = 1 / _Dotting.y;
 
                 float2 dotSize;
-                dotSize.x = _DotFillX / 100;
-                dotSize.y = _DotFillY / 100;
+                dotSize.x = _Dotting.z / 100;
+                dotSize.y = _Dotting.w / 100;
 
                 float gridLineThickness = _GridLineThickness / 1000000;
 
                 //grid spacing X
-                for (float cell = _OffsetX % gridSizeX; cell <= 1; cell += gridSizeX)
+                for (float cell = offsetX % gridSizeX; cell <= 1; cell += gridSizeX)
                 {
                     if (frac(uvNormalizedCoords.y / dotSpacing.y) >= dotSize.y)
                         continue;
@@ -168,7 +141,7 @@ Shader "Unlit/Grid"
                     result += isOnLine;
                 }
                 //grid spacing Y
-                for (float cell = _OffsetY % gridSizeY; cell <= 1; cell += gridSizeY)
+                for (float cell = offsetY % gridSizeY; cell <= 1; cell += gridSizeY)
                 {
                     if (frac(uvNormalizedCoords.x / dotSpacing.x) >= dotSize.x)
                         continue;
