@@ -32,8 +32,8 @@ Shader "Unlit/Grid"
         [Space()]
 
         _GridLineThickness
-            ("Grid Line Thickness", Range(0.00001, 0.1))
-            = 0.003
+            ("Grid Line Thickness", Range(1, 100000))
+            = 3000
 
         [Toggle()] _SharpLine
             ("Use sharp lines", float)
@@ -119,6 +119,8 @@ Shader "Unlit/Grid"
                 dotSize.x = _Dotting.z / 100;
                 dotSize.y = _Dotting.w / 100;
 
+                float gridLineThickness = _GridLineThickness / 1000000;
+
                 //grid spacing X
                 for (float cell = offsetX % gridSizeX; cell <= 1; cell += gridSizeX)
                 {
@@ -129,9 +131,9 @@ Shader "Unlit/Grid"
 
                     float isNotOnLine = 
                     _SharpLine ?
-                        step(_GridLineThickness, abs(currentCoordinate))
+                        step(gridLineThickness, abs(currentCoordinate))
                     :
-                        smoothstep(0.0, _GridLineThickness, abs(currentCoordinate))
+                        smoothstep(0.0, gridLineThickness, abs(currentCoordinate))
                     ;
 
                     float isOnLine = 1.0 - isNotOnLine;
@@ -148,9 +150,9 @@ Shader "Unlit/Grid"
                     
                     float isNotOnLine = 
                     _SharpLine ?
-                        step(_GridLineThickness, abs(currentCoordinate))
+                        step(gridLineThickness, abs(currentCoordinate))
                     :
-                        smoothstep(0.0, _GridLineThickness, abs(currentCoordinate))
+                        smoothstep(0.0, gridLineThickness, abs(currentCoordinate))
                     ;
 
                     float isOnLine = 1.0 - isNotOnLine;
