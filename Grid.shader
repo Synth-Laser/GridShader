@@ -8,43 +8,50 @@ Shader "Unlit/Grid"
         _MainTex
             ("Texture", 2D)
             = "clear" {}
-            
-        [Toggle()] _FilledLine
-            ("Fill line with color", float)
-            = 0
 
-        [HDR]_GridColour
-            ("Grid Colour", Color)
-            = (.255, .0, .0, 1)
-
-        [HDR]_BackgroundColour
-            ("Background Colour", Color)
-            = (.255, .0, .0, 1)
-
-        [Header(Grid Configurations)]
+        [Header(Layer 1 Grid)]
         [Space()]
 
-        _GridSize
-            ("Grid size params", Vector)
-            = (2, 1, 0, 0)
+        [HDR]       _GridColour1         ("Grid Colour", Color)                      = (.255, .0, .0, 1)
+        [Toggle()]  _FilledLine1         ("Fill line with color", float)             = 0
+        [HDR]       _BackgroundColour1   ("Background Colour", Color)                = (.255, .0, .0, 1)
+                    _GridSize1           ("Grid size params", Vector)                = (2, 1, 0, 0)
+                    _GridLineThickness1  ("Grid Line Thickness", Range(1, 100000))   = 3000
+        [Toggle()]  _SharpLine1          ("Use sharp lines", float)                  = 0
+                    _Dotting1            ("Dot Count, fill", Vector)                 = (5, 5, 50, 50)
 
-        [Header(Line Configurations)]
+        [Header(Layer 2 Waypoints)]
         [Space()]
 
-        _GridLineThickness
-            ("Grid Line Thickness", Range(1, 100000))
-            = 3000
+        [HDR]       _GridColour2         ("Grid Colour", Color)                      = (.255, .0, .0, 1)
+        [Toggle()]  _FilledLine2         ("Fill line with color", float)             = 0
+        [HDR]       _BackgroundColour2   ("Background Colour", Color)                = (.255, .0, .0, 1)
+                    _GridSize2           ("Grid size params", Vector)                = (2, 1, 0, 0)
+                    _GridLineThickness2  ("Grid Line Thickness", Range(1, 100000))   = 3000
+        [Toggle()]  _SharpLine2          ("Use sharp lines", float)                  = 0
+                    _Dotting2            ("Dot Count, fill", Vector)                 = (5, 5, 50, 50)
 
-        [Toggle()] _SharpLine
-            ("Use sharp lines", float)
-            = 0
-
-        [Header(Dotting Configurations)]
+        [Header(Layer 3 Bars)]
         [Space()]
-        
-        _Dotting
-            ("Dot Count, fill", Vector)
-            = (5, 5, 50, 50)
+
+        [HDR]       _GridColour3         ("Grid Colour", Color)                      = (.255, .0, .0, 1)
+        [Toggle()]  _FilledLine3         ("Fill line with color", float)             = 0
+        [HDR]       _BackgroundColour3   ("Background Colour", Color)                = (.255, .0, .0, 1)
+                    _GridSize3           ("Grid size params", Vector)                = (2, 1, 0, 0)
+                    _GridLineThickness3  ("Grid Line Thickness", Range(1, 100000))   = 3000
+        [Toggle()]  _SharpLine3          ("Use sharp lines", float)                  = 0
+                    _Dotting3            ("Dot Count, fill", Vector)                 = (5, 5, 50, 50)
+
+        [Header(Layer 4 Segments)]
+        [Space()]
+
+        [HDR]       _GridColour4         ("Grid Colour", Color)                      = (.255, .0, .0, 1)
+        [Toggle()]  _FilledLine4         ("Fill line with color", float)             = 0
+        [HDR]       _BackgroundColour4   ("Background Colour", Color)                = (.255, .0, .0, 1)
+                    _GridSize4           ("Grid size params", Vector)                = (2, 1, 0, 0)
+                    _GridLineThickness4  ("Grid Line Thickness", Range(1, 100000))   = 3000
+        [Toggle()]  _SharpLine4          ("Use sharp lines", float)                  = 0
+                    _Dotting4            ("Dot Count, fill", Vector)                 = (5, 5, 50, 50)
     }
     SubShader
     {
@@ -61,6 +68,7 @@ Shader "Unlit/Grid"
             
             // make fog work
             #pragma multi_compile_fog
+            #pragma multi_compile_instancing
 
             #include "UnityCG.cginc"
 
@@ -68,6 +76,8 @@ Shader "Unlit/Grid"
             {
                 float4 vertex : POSITION;
                 float2 uv : TEXCOORD0;
+
+                UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
             struct vert2frag
@@ -75,51 +85,63 @@ Shader "Unlit/Grid"
                 float2 uv : TEXCOORD0;
                 UNITY_FOG_COORDS(1)
                 float4 vertex : SV_POSITION;
+
+                UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
             sampler2D _MainTex;
             float4 _MainTex_ST;
 
-            float4 _GridColour;
-            float _FilledLine;
-            float4 _BackgroundColour;
-
-            float4 _GridSize;
+            float4  _GridColour1,    _BackgroundColour1,  _GridSize1,  _Dotting1;
+            float   _FilledLine1,    _GridLineThickness1, _SharpLine1;
             
-            float _GridLineThickness;
-            float _SharpLine;
+            float4  _GridColour2,    _BackgroundColour2,  _GridSize2,  _Dotting2;
+            float   _FilledLine2,    _GridLineThickness2, _SharpLine2;
             
-            float4 _Dotting;
+            float4  _GridColour3,    _BackgroundColour3,  _GridSize3,  _Dotting3;
+            float   _FilledLine3,    _GridLineThickness3, _SharpLine3;
+            
+            float4  _GridColour4,    _BackgroundColour4,  _GridSize4,  _Dotting4;
+            float   _FilledLine4,    _GridLineThickness4, _SharpLine4;
 
             vert2frag vert (appdata vertInput)
             {
                 vert2frag v2fOutput;
+
+                UNITY_SETUP_INSTANCE_ID(vertInput);
+                UNITY_TRANSFER_INSTANCE_ID(vertInput, v2fOutput);
                 
                 v2fOutput.vertex = UnityObjectToClipPos(vertInput.vertex);
                 v2fOutput.uv = TRANSFORM_TEX(vertInput.uv, _MainTex);
+
                 UNITY_TRANSFER_FOG(v2fOutput, v2fOutput.vertex);
 
                 return v2fOutput;
             }
 
-            float GridTest(float2 uvNormalizedCoords)
+            float GridTest
+            (
+                float2 uvNormalizedCoords,
+                float4 gridSize, float4 dotting,
+                float lineThickness, float sharpLine
+            )
             {
                 float result = 0.0;
-                float gridSizeX = 1 / _GridSize.y;
-                float gridSizeY = 1 / _GridSize.x;
+                float gridSizeX = 1 / gridSize.y;
+                float gridSizeY = 1 / gridSize.x;
 
-                float offsetX = _GridSize.z;
-                float offsetY = _GridSize.w;
+                float offsetX = gridSize.z;
+                float offsetY = gridSize.w;
 
                 float2 dotSpacing;
-                dotSpacing.x = 1 / _Dotting.x;
-                dotSpacing.y = 1 / _Dotting.y;
+                dotSpacing.x = 1 / dotting.x;
+                dotSpacing.y = 1 / dotting.y;
 
                 float2 dotSize;
-                dotSize.x = _Dotting.z / 100;
-                dotSize.y = _Dotting.w / 100;
+                dotSize.x = dotting.z / 100;
+                dotSize.y = dotting.w / 100;
 
-                float gridLineThickness = _GridLineThickness / 1000000;
+                float gridLineThickness = lineThickness / 1000000;
 
                 //grid spacing X
                 for (float cell = offsetX % gridSizeX; cell <= 1; cell += gridSizeX)
@@ -130,7 +152,7 @@ Shader "Unlit/Grid"
                     float currentCoordinate = uvNormalizedCoords.x - cell;
 
                     float isNotOnLine = 
-                    _SharpLine ?
+                    sharpLine ?
                         step(gridLineThickness, abs(currentCoordinate))
                     :
                         smoothstep(0.0, gridLineThickness, abs(currentCoordinate))
@@ -149,7 +171,7 @@ Shader "Unlit/Grid"
                     float currentCoordinate = uvNormalizedCoords.y - cell;
                     
                     float isNotOnLine = 
-                    _SharpLine ?
+                    sharpLine ?
                         step(gridLineThickness, abs(currentCoordinate))
                     :
                         smoothstep(0.0, gridLineThickness, abs(currentCoordinate))
@@ -164,14 +186,21 @@ Shader "Unlit/Grid"
                 return result;
             }
 
-            fixed4 frag(vert2frag input) : SV_Target
+            fixed4 GetLayer
+            (
+                fixed4 textureColor,
+                float filledLine,
+                float4 gridColour,
+                float4 backgroundColour,
+                
+                float2 uvNormalizedCoords,
+                float4 gridSize, float4 dotting,
+                float lineThickness, float sharpLine
+            )
             {
-                //texture sample
-                fixed4 textureColor = tex2D(_MainTex, input.uv);
-
                 //fill base
                 fixed4 fillColour = 
-                _FilledLine ?
+                filledLine ?
                     fixed4(0, 0, 0, 1)
                 :
                     fixed4(1, 1, 1, 1)
@@ -181,19 +210,60 @@ Shader "Unlit/Grid"
                 fillColour = lerp(fillColour, textureColor, textureColor.a);
                 
                 //grid mask
-                float gridAmount = GridTest(input.uv);
+                float gridAmount = GridTest(uvNormalizedCoords, gridSize, dotting, lineThickness, sharpLine);
                 
-                fixed4 gridColour = (_GridColour * gridAmount);
-                gridColour += fillColour;
-                gridColour.a = lerp(0, _GridColour.a, gridAmount);
+                fixed4 gridMask = (gridColour * gridAmount);
+                gridMask += fillColour;
+                gridMask.a = lerp(0, gridColour.a, gridAmount);
 
 
-                fixed4 bgColor = _BackgroundColour;
-                bgColor.a = _BackgroundColour.a;
+                fixed4 bgColor = backgroundColour;
+                bgColor.a = backgroundColour.a;
 
-                fixed4 combinedColour = lerp(bgColor, gridColour, gridColour.a);
 
-                return float4(combinedColour);
+                fixed4 combinedColour = lerp(bgColor, gridMask, gridMask.a);
+
+                return combinedColour;
+            }
+
+            fixed4 frag(vert2frag input) : SV_Target
+            {
+                UNITY_SETUP_INSTANCE_ID(input);
+
+                //texture sample
+                fixed4 textureColor = tex2D(_MainTex, input.uv);
+
+                fixed4 layer1 = GetLayer
+                (
+                    textureColor,
+                    _FilledLine1, _GridColour1, _BackgroundColour1,
+                    input.uv, _GridSize1, _Dotting1, _GridLineThickness1, _SharpLine1
+                );
+                fixed4 layer2 = GetLayer
+                (
+                    textureColor,
+                    _FilledLine2, _GridColour2, _BackgroundColour2,
+                    input.uv, _GridSize2, _Dotting2, _GridLineThickness2, _SharpLine2
+                );
+                fixed4 layer3 = GetLayer
+                (
+                    textureColor,
+                    _FilledLine3, _GridColour3, _BackgroundColour3,
+                    input.uv, _GridSize3, _Dotting3, _GridLineThickness3, _SharpLine3
+                );
+                fixed4 layer4 = GetLayer
+                (
+                    textureColor,
+                    _FilledLine4, _GridColour4, _BackgroundColour4,
+                    input.uv, _GridSize4, _Dotting4, _GridLineThickness4, _SharpLine4
+                );
+
+                fixed4 finalColour = layer1;
+                finalColour = lerp(finalColour, layer2, layer2.a);
+                finalColour = lerp(finalColour, layer3, layer3.a);
+                finalColour = lerp(finalColour, layer4, layer4.a);
+
+                return float4(finalColour);
             }
             ENDCG
         }
