@@ -146,7 +146,7 @@ Shader "Unlit/Grid"
                 dotSize.x = _DotFillX / 100;
                 dotSize.y = _DotFillY / 100;
 
-                double gridLineThickness = _GridLineThickness / 1000000;
+                float gridLineThickness = _GridLineThickness / 1000000;
 
                 //grid spacing X
                 for (float cell = _OffsetX % gridSizeX; cell <= 1; cell += gridSizeX)
