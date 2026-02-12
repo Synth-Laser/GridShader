@@ -74,35 +74,35 @@ Shader "Unlit/Grid"
 
             struct appdata
             {
-                float4 vertex : POSITION;
-                float2 uv : TEXCOORD0;
+                half4 vertex : POSITION;
+                half2 uv : TEXCOORD0;
 
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
             struct vert2frag
             {
-                float2 uv : TEXCOORD0;
+                half2 uv : TEXCOORD0;
                 UNITY_FOG_COORDS(1)
-                float4 vertex : SV_POSITION;
+                half4 vertex : SV_POSITION;
 
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
             sampler2D _MainTex;
-            float4 _MainTex_ST;
+            half4 _MainTex_ST;
 
-            float4  _GridColour1,    _BackgroundColour1,  _GridSize1,  _Dotting1;
-            float   _FilledLine1,    _GridLineThickness1, _SharpLine1;
+            half4  _GridColour1,    _BackgroundColour1,  _GridSize1,  _Dotting1;
+            half   _FilledLine1,    _GridLineThickness1, _SharpLine1;
             
-            float4  _GridColour2,    _BackgroundColour2,  _GridSize2,  _Dotting2;
-            float   _FilledLine2,    _GridLineThickness2, _SharpLine2;
+            half4  _GridColour2,    _BackgroundColour2,  _GridSize2,  _Dotting2;
+            half   _FilledLine2,    _GridLineThickness2, _SharpLine2;
             
-            float4  _GridColour3,    _BackgroundColour3,  _GridSize3,  _Dotting3;
-            float   _FilledLine3,    _GridLineThickness3, _SharpLine3;
+            half4  _GridColour3,    _BackgroundColour3,  _GridSize3,  _Dotting3;
+            half   _FilledLine3,    _GridLineThickness3, _SharpLine3;
             
-            float4  _GridColour4,    _BackgroundColour4,  _GridSize4,  _Dotting4;
-            float   _FilledLine4,    _GridLineThickness4, _SharpLine4;
+            half4  _GridColour4,    _BackgroundColour4,  _GridSize4,  _Dotting4;
+            half   _FilledLine4,    _GridLineThickness4, _SharpLine4;
 
             vert2frag vert (appdata vertInput)
             {
@@ -119,146 +119,125 @@ Shader "Unlit/Grid"
                 return v2fOutput;
             }
 
-            float GridTest
+            half GridTest
             (
-                float2 uvNormalizedCoords,
-                float4 gridSize, float4 dotting,
-                float lineThickness, float sharpLine
+                half2 uvNormalizedCoords,
+                half4 gridSize, half4 dotting,
+                half lineThickness, half isSharpLine
             )
             {
-                float result = 0.0;
-                float gridSizeX = 1 / gridSize.y;
-                float gridSizeY = 1 / gridSize.x;
+                half result = 0.0;
+                half gridSizeX = 1 / gridSize.y;
+                half gridSizeY = 1 / gridSize.x;
 
-                float offsetX = gridSize.z;
-                float offsetY = gridSize.w;
+                half offsetX = gridSize.z;
+                half offsetY = gridSize.w;
 
-                float2 dotSpacing;
+                half2 dotSpacing;
                 dotSpacing.x = 1 / dotting.x;
                 dotSpacing.y = 1 / dotting.y;
 
-                float2 dotSize;
+                half2 dotSize;
                 dotSize.x = dotting.z / 100;
                 dotSize.y = dotting.w / 100;
 
-                float gridLineThickness = lineThickness / 1000000;
+                half gridLineThickness = lineThickness / 1000000;
 
-                //grid spacing X
-                for (float cell = offsetX % gridSizeX; cell <= 1; cell += gridSizeX)
-                {
-                    if (frac(uvNormalizedCoords.y / dotSpacing.y) >= dotSize.y)
-                        continue;
+                half scaledX = (uvNormalizedCoords.x - offsetX) * gridSize.y;
+                half cellLocalX = frac(scaledX + 0.5) - 0.5;
+                half distToLineX = abs(cellLocalX) * gridSizeX;
 
-                    float currentCoordinate = uvNormalizedCoords.x - cell;
+                half sharpLineX = step(distToLineX, gridLineThickness);
+                half smoothLineX = smoothstep(gridLineThickness, 0.0, distToLineX);
+                half combineX = lerp(smoothLineX, sharpLineX, isSharpLine);
+                combineX *= step(frac(uvNormalizedCoords.y / dotSpacing.y), dotSize.y);
 
-                    float isNotOnLine = 
-                    sharpLine ?
-                        step(gridLineThickness, abs(currentCoordinate))
-                    :
-                        smoothstep(0.0, gridLineThickness, abs(currentCoordinate))
-                    ;
+                result += combineX;
 
-                    float isOnLine = 1.0 - isNotOnLine;
 
-                    result += isOnLine;
-                }
-                //grid spacing Y
-                for (float cell = offsetY % gridSizeY; cell <= 1; cell += gridSizeY)
-                {
-                    if (frac(uvNormalizedCoords.x / dotSpacing.x) >= dotSize.x)
-                        continue;
+                half scaledY = (uvNormalizedCoords.y - offsetY) * gridSize.x;
+                half cellLocalY = frac(scaledY + 0.5) - 0.5;
+                half distToLineY = abs(cellLocalY) * gridSizeY;
 
-                    float currentCoordinate = uvNormalizedCoords.y - cell;
-                    
-                    float isNotOnLine = 
-                    sharpLine ?
-                        step(gridLineThickness, abs(currentCoordinate))
-                    :
-                        smoothstep(0.0, gridLineThickness, abs(currentCoordinate))
-                    ;
+                half sharpLineY = step(distToLineY, gridLineThickness);
+                half smoothLineY = smoothstep(gridLineThickness, 0.0, distToLineY);
+                half combineY = lerp(smoothLineY, sharpLineY, isSharpLine);
+                combineY *= step(frac(uvNormalizedCoords.x / dotSpacing.x), dotSize.x);
 
-                    float isOnLine = 1.0 - isNotOnLine;
+                result += combineY;
 
-                    result += isOnLine;
-                }
-
-                if (result > 1) result = 1;
+                result = min(result, 1);
                 return result;
             }
 
-            fixed4 GetLayer
+            half4 GetLayer
             (
-                fixed4 textureColor,
-                float filledLine,
-                float4 gridColour,
-                float4 backgroundColour,
+                half4 textureColor,
+                half filledLine,
+                half4 gridColour,
+                half4 backgroundColour,
                 
-                float2 uvNormalizedCoords,
-                float4 gridSize, float4 dotting,
-                float lineThickness, float sharpLine
+                half2 uvNormalizedCoords,
+                half4 gridSize, half4 dotting,
+                half lineThickness, half sharpLine
             )
             {
                 //fill base
-                fixed4 fillColour = 
-                filledLine ?
-                    fixed4(0, 0, 0, 1)
-                :
-                    fixed4(1, 1, 1, 1)
-                ;
+                half4 fillColour = lerp(half4(1, 1, 1, 1), half4(0, 0, 0, 1), filledLine);
 
                 //bottom layer
                 fillColour = lerp(fillColour, textureColor, textureColor.a);
                 
                 //grid mask
-                float gridAmount = GridTest(uvNormalizedCoords, gridSize, dotting, lineThickness, sharpLine);
+                half gridAmount = GridTest(uvNormalizedCoords, gridSize, dotting, lineThickness, sharpLine);
                 
-                fixed4 gridMask = (gridColour * gridAmount);
+                half4 gridMask = (gridColour * gridAmount);
                 gridMask += fillColour;
                 gridMask.a = lerp(0, gridColour.a, gridAmount);
 
 
-                fixed4 bgColor = backgroundColour;
+                half4 bgColor = backgroundColour;
                 bgColor.a = backgroundColour.a;
 
 
-                fixed4 combinedColour = lerp(bgColor, gridMask, gridMask.a);
+                half4 combinedColour = lerp(bgColor, gridMask, gridMask.a);
 
                 return combinedColour;
             }
 
-            fixed4 frag(vert2frag input) : SV_Target
+            half4 frag(vert2frag input) : SV_Target
             {
                 UNITY_SETUP_INSTANCE_ID(input);
 
                 //texture sample
-                fixed4 textureColor = tex2D(_MainTex, input.uv);
+                half4 textureColor = tex2D(_MainTex, input.uv);
 
-                fixed4 layer1 = GetLayer
+                half4 layer1 = GetLayer
                 (
                     textureColor,
                     _FilledLine1, _GridColour1, _BackgroundColour1,
                     input.uv, _GridSize1, _Dotting1, _GridLineThickness1, _SharpLine1
                 );
-                fixed4 layer2 = GetLayer
+                half4 layer2 = GetLayer
                 (
                     textureColor,
                     _FilledLine2, _GridColour2, _BackgroundColour2,
                     input.uv, _GridSize2, _Dotting2, _GridLineThickness2, _SharpLine2
                 );
-                fixed4 layer3 = GetLayer
+                half4 layer3 = GetLayer
                 (
                     textureColor,
                     _FilledLine3, _GridColour3, _BackgroundColour3,
                     input.uv, _GridSize3, _Dotting3, _GridLineThickness3, _SharpLine3
                 );
-                fixed4 layer4 = GetLayer
+                half4 layer4 = GetLayer
                 (
                     textureColor,
                     _FilledLine4, _GridColour4, _BackgroundColour4,
                     input.uv, _GridSize4, _Dotting4, _GridLineThickness4, _SharpLine4
                 );
 
-                fixed4 finalColour = layer1;
+                half4 finalColour = layer1;
                 finalColour = lerp(finalColour, layer2, layer2.a);
                 finalColour = lerp(finalColour, layer3, layer3.a);
                 finalColour = lerp(finalColour, layer4, layer4.a);
