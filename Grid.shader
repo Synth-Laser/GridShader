@@ -1,4 +1,4 @@
-Shader "Unlit/Grid"
+Shader "URP/Lit/Grid"
 {
     Properties
     {
@@ -55,43 +55,38 @@ Shader "Unlit/Grid"
     }
     SubShader
     {
-        Tags  {"Queue" = "Transparent" "RenderType" = "Transparent" } 
+        Tags  {"Queue" = "Transparent" "RenderType" = "Transparent" "RenderPipeline" = "UniversalPipeline" }
         LOD 100
         Zwrite off
         Blend SrcAlpha OneMinusSrcAlpha
 
         Pass
         {
-            CGPROGRAM
+            HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            
-            // make fog work
-            #pragma multi_compile_fog
+           
             #pragma multi_compile_instancing
-
-            #include "UnityCG.cginc"
-
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
             struct appdata
             {
-                half4 vertex : POSITION;
-                half2 uv : TEXCOORD0;
-
+                float4 vertex : POSITION;
+                float2 uv : TEXCOORD0;
+                float3 normal : NORMAL;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
             struct vert2frag
             {
-                half2 uv : TEXCOORD0;
-                UNITY_FOG_COORDS(1)
-                half4 vertex : SV_POSITION;
-
+                float2 uv : TEXCOORD0;
+                float4 vertex : SV_POSITION;
+                float3 normalWS : TEXCOORD1;
                 UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
             sampler2D _MainTex;
-            half4 _MainTex_ST;
-
+            float4 _MainTex_ST;
             half4  _GridColour1,    _BackgroundColour1,  _GridSize1,  _Dotting1;
             half   _FilledLine1,    _GridLineThickness1, _SharpLine1;
             
@@ -110,12 +105,10 @@ Shader "Unlit/Grid"
 
                 UNITY_SETUP_INSTANCE_ID(vertInput);
                 UNITY_TRANSFER_INSTANCE_ID(vertInput, v2fOutput);
-                
-                v2fOutput.vertex = UnityObjectToClipPos(vertInput.vertex);
+               
+                v2fOutput.vertex = TransformObjectToHClip(vertInput.vertex.xyz);
                 v2fOutput.uv = TRANSFORM_TEX(vertInput.uv, _MainTex);
-
-                UNITY_TRANSFER_FOG(v2fOutput, v2fOutput.vertex);
-
+                v2fOutput.normalWS = TransformObjectToWorldNormal(vertInput.normal);
                 return v2fOutput;
             }
 
@@ -242,9 +235,16 @@ Shader "Unlit/Grid"
                 finalColour = lerp(finalColour, layer3, layer3.a);
                 finalColour = lerp(finalColour, layer4, layer4.a);
 
+                // --- Lighting Addition ---
+                Light mainLight = GetMainLight();
+                half3 normal = normalize(input.normalWS);
+                half NdotL = saturate(dot(normal, mainLight.direction));
+                half3 ambient = SampleSH(normal);
+                finalColour.rgb *= (mainLight.color * NdotL + ambient);
+
                 return float4(finalColour);
             }
-            ENDCG
+            ENDHLSL
         }
     }
 }
